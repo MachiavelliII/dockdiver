@@ -66,3 +66,10 @@ docker tag test-ubuntu:latest localhost:5000/test-ubuntu:latest
 docker push localhost:5000/test-ubuntu:latest
 curl http://localhost:5000/v2/_catalog
 ```
+
+### Cleaning Up after testing
+
+```bash
+docker-compose down
+rm -rf registry-data
+```
