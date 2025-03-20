@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -48,10 +49,14 @@ func main() {
 	errorColor := color.New(color.FgRed).SprintFunc()
 	warning := color.New(color.FgYellow).SprintFunc()
 
+	if len(os.Args) < 2 {
+		flag.Usage()
+		os.Exit(1)
+	}
+
 	validatedURL, err := validateAndNormalizeURL(*urlFlag, *port, *insecure)
 	if err != nil {
 		fmt.Printf("%s URL validation failed: %v\n", errorColor("[-]"), err)
-		flag.Usage()
 		return
 	}
 	fmt.Printf("%s Using validated URL: %s\n", success("[+]"), validatedURL)
