@@ -1,10 +1,12 @@
 package main
 
 import (
+	"crypto/tls"
 	"flag"
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/fatih/color"
@@ -26,6 +28,7 @@ func printASCIIArt() {
 
 func main() {
 	printASCIIArt()
+
 	urlFlag := flag.String("url", "http://localhost", "Base URL of the Docker registry (e.g., http://example.com or example.com)")
 	port := flag.Int("port", 5000, "Port of the registry (default: 5000)")
 	username := flag.String("username", "", "Username for authentication")
@@ -34,6 +37,7 @@ func main() {
 	headers := flag.String("headers", "", "Custom headers as JSON (e.g., '{\"X-Custom\": \"Value\"}')")
 	rate := flag.Int("rate", 10, "Requests per second (default: 10)")
 	outputDir := flag.String("dir", "docker_dump", "Output directory for dumped files")
+	insecure := flag.Bool("insecure", false, "Skip TLS certificate verification (use with caution)")
 	list := flag.Bool("list", false, "List all repositories")
 	dumpAll := flag.Bool("dump-all", false, "Dump all repositories")
 	dump := flag.String("dump", "", "Specific repository to dump")
@@ -44,15 +48,15 @@ func main() {
 	errorColor := color.New(color.FgRed).SprintFunc()
 	warning := color.New(color.FgYellow).SprintFunc()
 
-	// Validate and normalize URL
-	validatedURL, err := validateAndNormalizeURL(*urlFlag, *port)
+	validatedURL, err := validateAndNormalizeURL(*urlFlag, *port, *insecure)
 	if err != nil {
 		fmt.Printf("%s URL validation failed: %v\n", errorColor("[-]"), err)
+		flag.Usage()
 		return
 	}
 	fmt.Printf("%s Using validated URL: %s\n", success("[+]"), validatedURL)
 
-	cli := client.NewClient(*rate)
+	cli := client.NewClient(*rate, *insecure)
 	auth := client.AuthConfig{
 		Username: *username,
 		Password: *password,
@@ -60,9 +64,12 @@ func main() {
 		Headers:  *headers,
 	}
 
-	// Check if no authentication is provided
 	if auth.Username == "" && auth.Password == "" && auth.Bearer == "" {
 		fmt.Printf("%s No authentication provided (no username/password or bearer token). Proceeding without auth...\n", warning("[!]"))
+	}
+
+	if *insecure {
+		fmt.Printf("%s TLS verification disabled (insecure mode enabled)\n", warning("[!]"))
 	}
 
 	if *list {
@@ -91,60 +98,56 @@ func main() {
 	}
 }
 
-// validateAndNormalizeURL ensures the URL is valid and tests HTTP/HTTPS if no scheme is provided
-func validateAndNormalizeURL(inputURL string, port int) (string, error) {
-	// Parse the input URL
+func validateAndNormalizeURL(inputURL string, port int, insecure bool) (string, error) {
 	parsedURL, err := url.Parse(inputURL)
 	if err != nil {
 		return "", fmt.Errorf("invalid URL format: %v", err)
 	}
 
-	// If no scheme is provided (e.g., "example.com"), test both HTTP and HTTPS
 	if parsedURL.Scheme == "" {
 		domain := parsedURL.String()
 		if domain == "" {
-			domain = inputURL // Fallback if parsing failed to extract host
+			domain = inputURL
 		}
 
-		// Test HTTP
 		httpURL := fmt.Sprintf("http://%s:%d/v2/", domain, port)
-		if testURL(httpURL) {
+		if testURL(httpURL, insecure) {
 			return fmt.Sprintf("http://%s", domain), nil
 		}
 
-		// Test HTTPS
 		httpsURL := fmt.Sprintf("https://%s:%d/v2/", domain, port)
-		if testURL(httpsURL) {
+		if testURL(httpsURL, insecure) {
 			return fmt.Sprintf("https://%s", domain), nil
 		}
 
 		return "", fmt.Errorf("domain '%s' is not reachable on HTTP or HTTPS with port %d", domain, port)
 	}
 
-	// If scheme is provided, ensure it’s valid and reachable
 	if parsedURL.Scheme != "http" && parsedURL.Scheme != "https" {
 		return "", fmt.Errorf("unsupported scheme '%s'; use 'http' or 'https'", parsedURL.Scheme)
 	}
 
-	// Test the provided URL with the /v2/ endpoint (Docker registry check)
 	testURLStr := fmt.Sprintf("%s:%d/v2/", parsedURL.String(), port)
-	if !testURL(testURLStr) {
+	if !testURL(testURLStr, insecure) {
 		return "", fmt.Errorf("URL '%s' is not a reachable Docker registry on port %d", parsedURL.String(), port)
 	}
 
 	return parsedURL.String(), nil
 }
 
-// testURL checks if a URL is reachable by sending a GET request to the /v2/ endpoint
-func testURL(testURL string) bool {
+func testURL(testURL string, insecure bool) bool {
 	client := &http.Client{
-		Timeout: 10 * time.Second, // Short timeout for testing
+		Timeout: 5 * time.Second,
+	}
+	if insecure && strings.HasPrefix(testURL, "https://") {
+		client.Transport = &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
 	}
 	resp, err := client.Get(testURL)
 	if err != nil {
 		return false
 	}
 	defer resp.Body.Close()
-	// Accept 200 OK or 401 Unauthorized (common for registries without auth)
 	return resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusUnauthorized
 }
