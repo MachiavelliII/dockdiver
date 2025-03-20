@@ -13,7 +13,19 @@ import (
 	"dockdiver/registry"
 )
 
+func printASCIIArt() {
+	art := `
+       __           __       ___                
+  ____/ /___  _____/ /______/ (_)   _____  _____
+ / __  / __ \/ ___/ //_/ __  / / | / / _ \/ ___/
+/ /_/ / /_/ / /__/ ,< / /_/ / /| |/ /  __/ /    
+\__,_/\____/\___/_/|_|\__,_/_/ |___/\___/_/     
+`
+	fmt.Println(art)
+}
+
 func main() {
+	printASCIIArt()
 	urlFlag := flag.String("url", "http://localhost", "Base URL of the Docker registry (e.g., http://example.com or example.com)")
 	port := flag.Int("port", 5000, "Port of the registry (default: 5000)")
 	username := flag.String("username", "", "Username for authentication")
