@@ -57,8 +57,6 @@ func main() {
 		return
 	}
 
-	fmt.Printf("%s Using validated URL: %s\n", success("[+]"), validatedURL)
-
 	cli := client.NewClient(*rate, *insecure)
 	auth := client.AuthConfig{
 		Username: *username,
@@ -78,6 +76,8 @@ func main() {
 		flag.Usage()
 		os.Exit(1)
 	}
+
+	fmt.Printf("%s Using validated URL: %s\n", success("[+]"), validatedURL)
 
 	if auth.Username == "" && auth.Password == "" && auth.Bearer == "" {
 		fmt.Printf("%s No authentication provided (no username/password or bearer token). Proceeding without auth...\n", warning("[!]"))

@@ -2,6 +2,8 @@
 
 **dockdiver** is a Go-based tool to explore and extract contents from Docker registries. It can list repositories, dump specific repositories, or dump all repositories, including manifests, config blobs, and layer tarballs, with SHA256 integrity verification. This repository includes a Docker registry lab in the `lab/` directory for testing.
 
+[![dockdiver-usage](https://asciinema.org/a/kLgWzDiTWnoGURFHBs5XXXbLg.svg)](https://asciinema.org/a/kLgWzDiTWnoGURFHBs5XXXbLg)
+
 ## Features
 
 - List all repositories in a Docker registry.
@@ -32,7 +34,7 @@ go build
 / /_/ / /_/ / /__/ ,< / /_/ / /| |/ /  __/ /
 \__,_/\____/\___/_/|_|\__,_/_/ |___/\___/_/
 
-Usage of dockdiver:
+Usage of ./dockdiver:
   -bearer string
         Bearer token for Authorization
   -dir string
@@ -48,9 +50,9 @@ Usage of dockdiver:
   -password string
         Password for authentication
   -port int
-        Port of the registry (default: 5000) (default 5000)
+        Port of the registry (default: 5000)
   -rate int
-        Requests per second (default: 10) (default 10)
+        Requests per second (default: 10)
   -url string
         Base URL of the Docker registry (e.g., http://example.com or example.com)
   -username string
@@ -60,14 +62,10 @@ Usage of dockdiver:
 ### Launching registry lab for testing:
 
 ```bash
-cd lab/
-sudo docker-compose up -d
-sudo docker tag test-ubuntu:latest localhost:5000/test-ubuntu:latest
-sudo docker push localhost:5000/test-ubuntu:latest
-curl http://localhost:5000/v2/_catalog
+chmod +x run_lab.sh && ./run_lab.sh
 ```
 
-### Cleaning Up after testing
+### Cleaning up after testing
 
 ```bash
 sudo docker-compose down
