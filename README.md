@@ -71,3 +71,5 @@ chmod +x run_lab.sh && ./run_lab.sh
 sudo docker-compose down
 rm -rf registry-data
 ```
+
+#### Inspired from [DockerRegistryGrabber](https://github.com/Syzik/DockerRegistryGrabber)
