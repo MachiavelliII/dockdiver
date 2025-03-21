@@ -61,15 +61,15 @@ Usage of dockdiver:
 
 ```bash
 cd lab/
-docker-compose up -d
-docker tag test-ubuntu:latest localhost:5000/test-ubuntu:latest
-docker push localhost:5000/test-ubuntu:latest
+sudo docker-compose up -d
+sudo docker tag test-ubuntu:latest localhost:5000/test-ubuntu:latest
+sudo docker push localhost:5000/test-ubuntu:latest
 curl http://localhost:5000/v2/_catalog
 ```
 
 ### Cleaning Up after testing
 
 ```bash
-docker-compose down
+sudo docker-compose down
 rm -rf registry-data
 ```
