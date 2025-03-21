@@ -31,12 +31,12 @@ func main() {
 	printASCIIArt()
 
 	urlFlag := flag.String("url", "", "Base URL of the Docker registry (e.g., http://example.com or example.com)")
-	port := flag.Int("port", 5000, "Port of the registry (default: 5000)")
+	port := flag.Int("port", 5000, "Port of the registry")
 	username := flag.String("username", "", "Username for authentication")
 	password := flag.String("password", "", "Password for authentication")
 	bearer := flag.String("bearer", "", "Bearer token for Authorization")
 	headers := flag.String("headers", "", "Custom headers as JSON (e.g., '{\"X-Custom\": \"Value\"}')")
-	rate := flag.Int("rate", 10, "Requests per second (default: 10)")
+	rate := flag.Int("rate", 10, "Requests per second")
 	outputDir := flag.String("dir", "docker_dump", "Output directory for dumped files")
 	insecure := flag.Bool("insecure", false, "Skip TLS certificate verification (use with caution)")
 	list := flag.Bool("list", false, "List all repositories")
@@ -49,10 +49,6 @@ func main() {
 	errorColor := color.New(color.FgRed).SprintFunc()
 	warning := color.New(color.FgYellow).SprintFunc()
 
-	if len(os.Args) < 2 || *urlFlag == "" {
-		flag.Usage()
-		os.Exit(1)
-	}
 
 	validatedURL, err := validateAndNormalizeURL(*urlFlag, *port, *insecure)
 	if err != nil {
@@ -60,6 +56,7 @@ func main() {
 		flag.Usage()
 		return
 	}
+
 	fmt.Printf("%s Using validated URL: %s\n", success("[+]"), validatedURL)
 
 	cli := client.NewClient(*rate, *insecure)
@@ -68,6 +65,18 @@ func main() {
 		Password: *password,
 		Bearer:   *bearer,
 		Headers:  *headers,
+	}
+
+	if flag.CommandLine.Lookup("url").Value.String() != flag.CommandLine.Lookup("url").DefValue && !*list && !*dumpAll && *dump == "" {
+		fmt.Printf("%s No action specified. Please choose one of the following:\n", warning("[!]"))
+		fmt.Println("  -list : List all repositories")
+		fmt.Println("  -dump <repository> : Dump a specific repository")
+		fmt.Println("  -dump-all : Dump all repositories")
+		fmt.Printf("Example: %s -url %s -list\n", os.Args[0], validatedURL)
+		os.Exit(1)
+	} else if !*list && !*dumpAll && *dump == "" {
+		flag.Usage()
+		os.Exit(1)
 	}
 
 	if auth.Username == "" && auth.Password == "" && auth.Bearer == "" {
@@ -84,6 +93,7 @@ func main() {
 			fmt.Printf("%s Error listing repositories: %v\n", errorColor("[-]"), err)
 			return
 		}
+		fmt.Printf("\nAvailable repositories:\n", )
 		for _, repo := range repos {
 			fmt.Printf("%s %s\n", success("[+]"), repo)
 		}
@@ -99,8 +109,6 @@ func main() {
 			return
 		}
 		fmt.Printf("%s Dumped %s successfully\n", success("[+]"), *dump)
-	} else {
-		flag.Usage()
 	}
 }
 
