@@ -57,6 +57,7 @@ func main() {
 	validatedURL, err := validateAndNormalizeURL(*urlFlag, *port, *insecure)
 	if err != nil {
 		fmt.Printf("%s URL validation failed: %v\n", errorColor("[-]"), err)
+		flag.Usage()
 		return
 	}
 	fmt.Printf("%s Using validated URL: %s\n", success("[+]"), validatedURL)
@@ -104,11 +105,15 @@ func main() {
 }
 
 func validateAndNormalizeURL(inputURL string, port int, insecure bool) (string, error) {
+	// Trim trailing slashes for consistency
+	inputURL = strings.TrimRight(inputURL, "/")
+
 	parsedURL, err := url.Parse(inputURL)
 	if err != nil {
 		return "", fmt.Errorf("invalid URL format: %v", err)
 	}
 
+	// If no scheme provided, test both http and https
 	if parsedURL.Scheme == "" {
 		domain := parsedURL.String()
 		if domain == "" {
@@ -128,10 +133,12 @@ func validateAndNormalizeURL(inputURL string, port int, insecure bool) (string, 
 		return "", fmt.Errorf("domain '%s' is not reachable on HTTP or HTTPS with port %d", domain, port)
 	}
 
+	// Validate scheme
 	if parsedURL.Scheme != "http" && parsedURL.Scheme != "https" {
 		return "", fmt.Errorf("unsupported scheme '%s'; use 'http' or 'https'", parsedURL.Scheme)
 	}
 
+	// Test the URL with port
 	testURLStr := fmt.Sprintf("%s:%d/v2/", parsedURL.String(), port)
 	if !testURL(testURLStr, insecure) {
 		return "", fmt.Errorf("URL '%s' is not a reachable Docker registry on port %d", parsedURL.String(), port)
@@ -142,17 +149,22 @@ func validateAndNormalizeURL(inputURL string, port int, insecure bool) (string, 
 
 func testURL(testURL string, insecure bool) bool {
 	client := &http.Client{
-		Timeout: 5 * time.Second,
+		Timeout: 5 * time.Second, // Reasonable timeout
 	}
 	if insecure && strings.HasPrefix(testURL, "https://") {
 		client.Transport = &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		}
 	}
-	resp, err := client.Get(testURL)
-	if err != nil {
-		return false
+
+	// Retry once after a short delay to handle startup timing
+	for i := 0; i < 2; i++ {
+		resp, err := client.Get(testURL)
+		if err == nil {
+			defer resp.Body.Close()
+			return resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusUnauthorized
+		}
+		time.Sleep(500 * time.Millisecond) // Wait before retry
 	}
-	defer resp.Body.Close()
-	return resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusUnauthorized
+	return false
 }

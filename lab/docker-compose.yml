@@ -3,14 +3,21 @@ services:
   registry:
     image: registry:2
     ports:
-      - "5000:5000"
+      - "127.0.0.1:5000:5000" # Bind strictly to localhost
     volumes:
       - ./registry-data:/var/lib/registry
       - ./config.yml:/etc/docker/registry/config.yml
     environment:
       - REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY=/var/lib/registry
-
+    networks:
+      - lab-net
   seed:
     build: .
     image: test-ubuntu:latest
     command: tail -f /dev/null
+    networks:
+      - lab-net
+
+networks:
+  lab-net:
+    driver: bridge
