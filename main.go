@@ -49,7 +49,7 @@ func main() {
 	errorColor := color.New(color.FgRed).SprintFunc()
 	warning := color.New(color.FgYellow).SprintFunc()
 
-	if len(os.Args) < 2 {
+	if len(os.Args) < 2 || *urlFlag == "" {
 		flag.Usage()
 		os.Exit(1)
 	}
