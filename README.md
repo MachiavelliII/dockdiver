@@ -52,7 +52,7 @@ Usage of dockdiver:
   -rate int
         Requests per second (default: 10) (default 10)
   -url string
-        Base URL of the Docker registry (e.g., http://example.com or example.com) (default "http://localhost")
+        Base URL of the Docker registry (e.g., http://example.com or example.com)
   -username string
         Username for authentication
 ```

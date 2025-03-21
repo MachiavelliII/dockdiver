@@ -30,7 +30,7 @@ func printASCIIArt() {
 func main() {
 	printASCIIArt()
 
-	urlFlag := flag.String("url", "http://localhost", "Base URL of the Docker registry (e.g., http://example.com or example.com)")
+	urlFlag := flag.String("url", "", "Base URL of the Docker registry (e.g., http://example.com or example.com)")
 	port := flag.Int("port", 5000, "Port of the registry (default: 5000)")
 	username := flag.String("username", "", "Username for authentication")
 	password := flag.String("password", "", "Password for authentication")
