@@ -61,15 +61,28 @@ Usage of ./dockdiver:
 
 ### Launching registry lab for testing:
 
+Run the following command to set up the lab **(Linux & macOS)**:
 ```bash
 chmod +x run_lab.sh && ./run_lab.sh
+```
+For **Windows**:
+```ps1
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned # Run once if needed
+.\run_lab_windows.ps1
 ```
 
 ### Cleaning up after testing
 
+For **(Linux & macOS)**:
 ```bash
 sudo docker-compose down
 rm -rf registry-data
+```
+
+For **Windows**:
+```ps1
+docker-compose down
+Remove-Item -Path "registry-data" -Recurse -Force
 ```
 
 #### Inspired from [DockerRegistryGrabber](https://github.com/Syzik/DockerRegistryGrabber)
