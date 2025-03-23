@@ -43,5 +43,4 @@ jobs:
           project_path: "."
           binary_name: "dockdiver"
           extra_files: "README.md LICENSE"
-          md5sum: "TRUE"
           sha256sum: "TRUE"
