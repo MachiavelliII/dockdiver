@@ -6,40 +6,62 @@ function Check-Tools {
         $answer = Read-Host "Would you like to install Docker? (y/n)"
         if ($answer -eq "y" -or $answer -eq "Y") {
             Write-Host "[*] Installing Docker..." -ForegroundColor Yellow
-            # Install Docker Desktop using winget
             winget install -e --id Docker.DockerDesktop
-            # Verify installation
-            if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
-                Write-Host "[-] Docker installation failed. Please install manually." -ForegroundColor Red
-                exit 1
-            }
+            Write-Host "[*] Docker Desktop installed. Please start Docker Desktop from the Start menu." -ForegroundColor Yellow
+            Write-Host "[*] You may need to accept the terms and conditions and complete the initial setup in the GUI." -ForegroundColor Yellow
+            Write-Host "[*] After setup, this script will restart and continue automatically." -ForegroundColor Yellow
+            $scriptPath = $PSCommandPath
+            Start-Process powershell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`"" -NoNewWindow
+            exit 0
         } else {
             Write-Host "[-] Lab cannot start without Docker. Exiting..." -ForegroundColor Red
             exit 1
         }
     }
 
-    # Check if Docker Compose is installed (docker-compose is part of Docker Desktop on Windows :>)
-    if (-not (Get-Command docker-compose -ErrorAction SilentlyContinue)) {
-        Write-Host "[-] Docker Compose is not installed!" -ForegroundColor Red
-        $answer = Read-Host "Would you like to install Docker Compose? (y/n)"
+    # Check if Docker daemon is running
+    Write-Host "[*] Checking Docker daemon status..." -ForegroundColor Yellow
+    try {
+        $result = & docker info --format '{{.ServerVersion}}' 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            throw "Docker daemon not running: $result"
+        }
+        Write-Host "[+] Docker daemon is running." -ForegroundColor Green
+    } catch {
+        Write-Host "[-] Docker daemon is not running!" -ForegroundColor Red
+        Write-Host "[*] Please start Docker Desktop from the Start menu if it’s not already running." -ForegroundColor Yellow
+        Write-Host "[*] If recently installed, accept the terms and conditions and complete the GUI setup." -ForegroundColor Yellow
+        $answer = Read-Host "Wait for Docker Desktop to start? (y/n)"
         if ($answer -eq "y" -or $answer -eq "Y") {
-            Write-Host "[*] Installing Docker Compose (via Docker Desktop)..." -ForegroundColor Yellow
-            # Docker Compose is bundled with Docker Desktop, so reinstall Docker Desktop
-            winget install -e --id Docker.DockerDesktop
-            # Verify installation
-            if (-not (Get-Command docker-compose -ErrorAction SilentlyContinue)) {
-                Write-Host "[-] Docker Compose installation failed. Please install manually." -ForegroundColor Red
-                exit 1
-            }
+            Write-Host "[*] Waiting for Docker daemon... Press Ctrl+C to cancel." -ForegroundColor Yellow
+            do {
+                Start-Sleep -Seconds 5
+                try {
+                    $result = & docker info --format '{{.ServerVersion}}' 2>&1
+                    if ($LASTEXITCODE -ne 0) {
+                        throw "Docker daemon not running: $result"
+                    }
+                    Write-Host "[+] Docker daemon is now running!" -ForegroundColor Green
+                    break
+                } catch {
+                    Write-Host "[*] Still waiting for Docker daemon... Ensure Docker Desktop is running and setup is complete." -ForegroundColor Yellow
+                }
+            } while ($true)
         } else {
-            Write-Host "[-] Lab cannot start without Docker Compose. Exiting..." -ForegroundColor Red
+            Write-Host "[-] Lab cannot start without Docker. Exiting..." -ForegroundColor Red
             exit 1
         }
     }
+
+    # Check if Docker Compose is installed
+    if (-not (Get-Command docker-compose -ErrorAction SilentlyContinue)) {
+        Write-Host "[-] Docker Compose is not installed! This should be included with Docker Desktop." -ForegroundColor Red
+        Write-Host "[-] Please ensure Docker Desktop is installed correctly and rerun this script." -ForegroundColor Red
+        exit 1
+    }
 }
 
-# Check tools before proceeding
+# Check tools and daemon before proceeding
 Check-Tools
 
 # Change to the lab directory
