@@ -82,8 +82,7 @@ rm -rf registry-data
 
 For **Windows**:
 ```ps1
-# Inside the lab/ directory.
-docker-compose down
+docker-compose down # Inside the lab/ directory.
 Remove-Item -Path "registry-data" -Recurse -Force
 ```
 
