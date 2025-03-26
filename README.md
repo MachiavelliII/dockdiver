@@ -75,7 +75,7 @@ Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned # Run once 
 
 For **(Linux & macOS)**:
 ```bash
-Inside the lab/ directory.
+# Inside the lab/ directory.
 sudo docker-compose down
 rm -rf registry-data
 ```
