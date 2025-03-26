@@ -75,12 +75,14 @@ Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned # Run once 
 
 For **(Linux & macOS)**:
 ```bash
+Inside the lab/ directory.
 sudo docker-compose down
 rm -rf registry-data
 ```
 
 For **Windows**:
 ```ps1
+# Inside the lab/ directory.
 docker-compose down
 Remove-Item -Path "registry-data" -Recurse -Force
 ```
