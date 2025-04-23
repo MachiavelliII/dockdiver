@@ -14,7 +14,7 @@
 ## Prerequisites
 
 - [Go](https://golang.org/dl/) (1.16 or later) for building the tool.
-- [Docker](https://www.docker.com/get-started) and [Docker Compose](https://docs.docker.com/compose/install/) for running the lab.
+- [Docker](https://www.docker.com/get-started) and [Docker Compose](https://docs.docker.com/compose/install/) for running the lab (Optional).
 
 ## Instructions
 
