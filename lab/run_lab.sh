@@ -44,7 +44,7 @@ check_tools() {
 # Check tools before proceeding
 check_tools
 
-cd lab/
+cd docker/
 
 # Stop any existing lab
 echo -e "\e[33m[*]\e[0m Stopping and removing any existing lab for fresh start...\n"
