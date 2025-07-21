@@ -65,7 +65,7 @@ function Check-Tools {
 Check-Tools
 
 # Change to the lab directory
-Set-Location -Path "lab\"
+Set-Location -Path "docker\"
 
 # Stop any existing lab
 Write-Host "[*] Stopping and removing any existing lab for a fresh start..." -ForegroundColor Yellow

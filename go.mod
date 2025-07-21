@@ -4,7 +4,7 @@ go 1.24.1
 
 require (
 	github.com/fatih/color v1.18.0
-	golang.org/x/time v0.11.0
+	golang.org/x/time v0.12.0
 )
 
 require (

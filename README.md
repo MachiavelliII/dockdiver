@@ -26,12 +26,12 @@
 git clone https://github.com/MachiavelliII/dockdiver.git
 cd dockdiver
 go build
-./dockdiver -h
+./dockdiver
 
        __           __       ___
   ____/ /___  _____/ /______/ (_)   _____  _____
  / __  / __ \/ ___/ //_/ __  / / | / / _ \/ ___/
-/ /_/ / /_/ / /__/ ,< / /_/ / /| |/ /  __/ /
+/ /_/ / /_/ / /__/ ,< / /_/ / /| |/ /  __/ /   @MachIaVellill
 \__,_/\____/\___/_/|_|\__,_/_/ |___/\___/_/
 
 Usage of ./dockdiver:
@@ -45,45 +45,55 @@ Usage of ./dockdiver:
         Dump all repositories
   -headers string
         Custom headers as JSON (e.g., '{"X-Custom": "Value"}')
+  -insecure
+        Skip TLS certificate verification
   -list
         List all repositories
   -password string
-        Password for authentication
+        Password for Basic authentication
   -port int
-        Port of the registry (default: 5000)
+        Port of the registry (used if not specified in URL) (default 5000)
+  -proxy string
+        Proxy URL (e.g., http://127.0.0.1:8080, https://proxy.com:8443, or socks5://127.0.0.1:1080)
+  -proxy-password string
+        Password for SOCKS5 proxy authentication
+  -proxy-username string
+        Username for SOCKS5 proxy authentication
   -rate int
-        Requests per second (default: 10)
+        Requests per second (default 3)
+  -timeout duration
+        HTTP request timeout (e.g., 10s, 500ms) (default 30s)
   -url string
-        Base URL of the Docker registry (e.g., http://example.com or example.com)
+        Base URL or hostname of the Docker registry (e.g., http://example.com or example.com)
   -username string
-        Username for authentication
+        Username for Basic authentication
 ```
 
 ### Launching registry lab for testing:
 
 Run the following command to set up the lab **(Linux & macOS)**:
 ```bash
-chmod +x run_lab.sh && ./run_lab.sh
+cd lab/ && chmod +x run_lab.sh && ./run_lab.sh
 ```
 For **Windows**:
 ```ps1
 Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned # Run once if needed
-.\run_lab_windows.ps1
+cd .\lab; .\run_lab_windows.ps1
 ```
 
 ### Cleaning up after testing
 
 For **(Linux & macOS)**:
 ```bash
-# Inside the lab/ directory.
+# Inside the lab/docker/ directory.
 sudo docker-compose down
 rm -rf registry-data
 ```
 
 For **Windows**:
 ```ps1
-docker-compose down # Inside the lab/ directory.
+docker-compose down # Inside the lab/docker/ directory.
 Remove-Item -Path "registry-data" -Recurse -Force
 ```
 
-#### Inspired from [DockerRegistryGrabber](https://github.com/Syzik/DockerRegistryGrabber)
+#### Inspired By [DockerRegistryGrabber](https://github.com/Syzik/DockerRegistryGrabber)
